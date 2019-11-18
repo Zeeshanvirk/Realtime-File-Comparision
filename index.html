@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>File Comparison</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/xlsx.full.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/jszip.js"></script>
+</head>
+<body>
+
+<h1>Real-time file comparison in a web browser with
+JavaScript</h1>
+<h4>Kindly Upload two files for comparison</h4>
+Choose File A :<input type="file" id="FileA" >
+Choose File B :<input type="file" id="FileB">
+<input type="button" id="upload" value="UploadData" onclick="loadJson()" /></br></br>
+<input type="button" id="compare" value="Start comparison" onclick="startcomp()" disabled />
+</br></br>
+<input type="button" id="down" value="Download Resultant file" onclick="download()" disabled />
+<div id="container"></div>
+
+<script type="text/javascript">
+var fileA;
+var fileB;
+var resultantfile=[];
+
+function download(){
+//var obj = {a: 123, b: "4 5 6"};
+var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(resultantfile));
+
+var h = document.createElement('h3');
+
+h.innerHTML = ' click on link to download the resaultant file  ';
+
+var container = document.getElementById('container');
+container.appendChild(h);
+var a = document.createElement('a');
+a.href = 'data:' + data;
+a.download = 'data.json';
+a.innerHTML = 'download JSON';
+
+var container = document.getElementById('container');
+container.appendChild(a);
+}
+function loadJson(){
+var comp = document.getElementById("compare").disabled=false;
+var fileUploadA = document.getElementById("FileA");
+//check=true;
+UploadA(fileUploadA);
+//check=false;
+var fileUploadB = document.getElementById("FileB");
+UploadB(fileUploadB);
+
+//console.log(fileA);
+//console.log(fileB);
+
+}
+function startcomp(){
+if(fileA && fileB){
+//console.log(fileA);
+//console.log(fileB);
+
+for (var i=0; i<fileA.length;i++){
+	var obj1 = fileA[i];
+	var obj2 = fileB[i];
+
+   // console.log(obj.id)
+	var result=obj2["Final Order (cases)"]-obj1["Final Order (cases)"];
+	if(result > 0){
+	//console.log("positive: "+ result);
+ 
+
+		resultantfile.push({ 
+        "Customer Name:" : obj2["Customer Name:"],
+		"Customer SAP Code:":obj2["Customer SAP Code:"],
+		"SKU CODE":obj2["SKU CODE"],
+		"Category ":obj2["Category"],
+		" SKU Description ":obj2["SKU Description"],
+		" Safety Stocks (cases) ":obj2["Safety Stocks (cases)"],
+		"Target / SOP":obj2["Target / SOP"],
+		"End Stocks  (cases) Monday":obj2["End Stocks  (cases) Monday"],
+		"DAY COVERS":obj2["DAY COVERS"],
+		"Stocks Required (cases)":obj2["Stocks Required (cases)"],
+		"DBR Generated (cases)":obj2["DBR Generated (cases)"],
+		"Cancellations / Adjustments (cases)":obj2["Cancellations / Adjustments (cases)"],
+		"Final Order (cases)":result,
+		"Deficit / Increment against Requirement":obj2["Deficit / Increment against Requirement"],
+		"Cancellation in tons":obj2["Cancellation in tons"],
+							});
+	//console.log(resultantfile);
+
+		}else if (result < 0){
+
+		console.log("Negative: "+ result);
+		resultantfile.push({ 
+        "Customer Name:" : obj1["Customer Name:"],
+		"Customer SAP Code:":obj1["Customer SAP Code:"],
+		"SKU CODE":obj1["SKU CODE"],
+		"Category ":obj1["Category"],
+		" SKU Description ":obj1["SKU Description"],
+		" Safety Stocks (cases) ":obj1["Safety Stocks (cases)"],
+		"Target / SOP":obj1["Target / SOP"],
+		"End Stocks  (cases) Monday":obj1["End Stocks  (cases) Monday"],
+		"DAY COVERS":obj1["DAY COVERS"],
+		"Stocks Required (cases)":obj1["Stocks Required (cases)"],
+		"DBR Generated (cases)":obj1["DBR Generated (cases)"],
+		"Cancellations / Adjustments (cases)":obj1["Cancellations / Adjustments (cases)"],
+		"Final Order (cases)":result,
+		"Deficit / Increment against Requirement":obj1["Deficit / Increment against Requirement"],
+		"Cancellation in tons":obj1["Cancellation in tons"],
+    });
+	console.log(resultantfile);
+					}
+		}
+
+
+	document.getElementById("down").disabled=false;
+	}
+
+}
+    function UploadA(fileUpload) {
+        //Reference the FileUpload element.
+        
+			
+        //Validate whether File is valid Excel file.
+        var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx)$/;
+        if (regex.test(fileUpload.value.toLowerCase())) {
+            if (typeof (FileReader) != "undefined") {
+                var reader = new FileReader();
+ 
+                //For Browsers other than IE.
+                if (reader.readAsBinaryString) {
+                    reader.onload = function (e) {
+                        ProcessExcelA(e.target.result);
+                    };
+                    reader.readAsBinaryString(fileUpload.files[0]);
+                } else {
+                    //For IE Browser.
+                    reader.onload = function (e) {
+                        var data = "";
+                        var bytes = new Uint8Array(e.target.result);
+                        for (var i = 0; i < bytes.byteLength; i++) {
+                            data += String.fromCharCode(bytes[i]);
+                        }
+                        ProcessExcelA(data);
+                    };
+                    reader.readAsArrayBuffer(fileUpload.files[0]);
+                }
+            } else {
+                alert("This browser does not support HTML5.");
+            }
+        } else {
+            alert("Please upload a valid Excel file.");
+        }
+    };
+	function UploadB(fileUpload) {
+        //Reference the FileUpload element.
+        
+			
+        //Validate whether File is valid Excel file.
+        var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx)$/;
+        if (regex.test(fileUpload.value.toLowerCase())) {
+            if (typeof (FileReader) != "undefined") {
+                var reader = new FileReader();
+ 
+                //For Browsers other than IE.
+                if (reader.readAsBinaryString) {
+                    reader.onload = function (e) {
+                        ProcessExcelB(e.target.result);
+                    };
+                    reader.readAsBinaryString(fileUpload.files[0]);
+                } else {
+                    //For IE Browser.
+                    reader.onload = function (e) {
+                        var data = "";
+                        var bytes = new Uint8Array(e.target.result);
+                        for (var i = 0; i < bytes.byteLength; i++) {
+                            data += String.fromCharCode(bytes[i]);
+                        }
+                        ProcessExcelB(data);
+                    };
+                    reader.readAsArrayBuffer(fileUpload.files[0]);
+                }
+            } else {
+                alert("This browser does not support HTML5.");
+            }
+        } else {
+            alert("Please upload a valid Excel file.");
+        }
+    };
+	
+	function ProcessExcelB(data) {
+        //Read the Excel File data.
+        var workbook = XLSX.read(data, {
+            type: 'binary'
+        });
+ 
+        //Fetch the name of First Sheet.
+        var firstSheet = workbook.SheetNames[0];
+ 
+        //Read all rows from First Sheet into an JSON array.
+        var excelRows = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[firstSheet]);
+		
+		fileB=excelRows;
+		
+       
+    };
+	    function ProcessExcelA(data) {
+        //Read the Excel File data.
+        var workbook = XLSX.read(data, {
+            type: 'binary'
+        });
+ 
+        //Fetch the name of First Sheet.
+        var firstSheet = workbook.SheetNames[0];
+ 
+        //Read all rows from First Sheet into an JSON array.
+        var excelRows = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[firstSheet]);
+		fileA=excelRows;
+		
+      
+    };
+
+
+</script>
+
+</body>
+</html>
